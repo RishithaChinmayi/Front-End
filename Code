@@ -1,0 +1,169 @@
+Code:
+Frontend (React):
+This is a basic example using React components. You can utilize a state management library like Redux for complex applications.
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+const TaskList = ({ tasks, onDelete, onUpdate }) => {
+  return (
+    <ul>
+      {tasks.map(task => (
+        <li key={task.id}>
+          <h3>{task.title}</h3>
+          <p>{task.description}</p>
+          <button onClick={() => onDelete(task.id)}>Delete</button>
+          <button onClick={() => onUpdate(task)}>Update</button>
+        </li>
+      ))}
+    </ul>
+  );
+};
+
+const TaskForm = ({ onSubmit }) => {
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [dueDate, setDueDate] = useState('');
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSubmit({ title, description, dueDate });
+    setTitle('');
+    setDescription('');
+    setDueDate('');
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <label>Title:</label>
+      <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} />
+      <label>Description:</label>
+      <textarea value={description} onChange={(e) => setDescription(e.target.value)} />
+      <label>Due Date:</label>
+      <input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
+      <button type="submit">Add Task</button>
+    </form>
+  );
+};
+
+const App = () => {
+  const [tasks, setTasks] = useState([]);
+
+  useEffect(() => {
+    const fetchTasks = async () => {
+      const result = await axios.get('http://localhost:5000/tasks');
+      setTasks(result.data);
+    };
+    fetchTasks();
+  }, []);
+
+  const handleDelete = async (id) => {
+    await axios.delete
+App.js:
+
+import React, { useState, useEffect } from 'react';
+import './App.css';
+import TaskList from './components/TaskList';
+import TaskForm from './components/TaskForm';
+
+function App() {
+  const [tasks, setTasks] = useState([]);
+
+  useEffect(() => {
+    fetch('/tasks')
+      .then(res => res.json())
+      .then(data => setTasks(data));
+  }, []);
+
+  const addTask = (task) => {
+    fetch('/tasks', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(task)
+    })
+      .then(res => res.json())
+      .then(newTask => setTasks([...tasks, newTask]));
+  };
+
+  // ... similar logic for update and delete functionality
+
+  return (
+    <div className="App">
+      <h1>Task Manager</h1>
+      <TaskList tasks={tasks} />
+      <TaskForm onAddTask={addTask} />
+    </div>
+  );
+}
+
+export default App;
+
+TaskList.js:
+import React from 'react';
+
+const TaskList = ({ tasks }) => {
+  return (
+    <ul>
+      {tasks.map(task => (
+        <li key={task._id}>
+          <h3>{task.title}</h3>
+          <p>{task.description}</p>
+          {/* Buttons for view, edit, delete */}
+        </li>
+      ))}
+    </ul>
+  );
+};
+
+export default TaskList;
+
+
+
+Server.js:
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
+
+const app = express();
+const port = process.env.PORT || 5000;
+
+// Connect to MongoDB
+mongoose.connect('mongodb://localhost:27017/task-manager', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+});
+
+const taskSchema = new mongoose.Schema({
+  title: {
+    type: String,
+    required: true
+  },
+  description: String,
+  dueDate: Date
+});
+
+const Task = mongoose.model('Task', taskSchema);
+
+app.use(cors());
+app.use(express.json());
+
+// GET all tasks
+app.get('/tasks', async (req, res) => {
+  try {
+    const tasks = await Task.find();
+    res.json(tasks);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// ... similar logic for other API endpoints (POST, GET/:id, PUT/:id, DELETE/:id)
+
+app.listen(port, () => console.log(`Server listening on port ${port}`));
+
+
+
+
+
+
+
+
+
